@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Bank {
+  id         String @id @default(cuid())
+  name       String
+  statements Statement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Statement {
+  id            String  @id @default(cuid())
+  sl            Int
+  date          DateTime
+  particular    String
+  instrumentNo  String?
+  withdraw      Float?
+  deposit       Float?
+  balance       Float?
+  remarks       String?
+
+  bankId String
+  bank   Bank    @relation(fields: [bankId], references: [id])
+
+  createdAt DateTime @default(now())
+}
