@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Bank {
-  id         String @id @default(cuid())
+  id         String      @id @default(cuid())
   name       String
   statements Statement[]
 
@@ -17,18 +17,18 @@ model Bank {
 }
 
 model Statement {
-  id            String  @id @default(cuid())
-  sl            Int
-  date          DateTime
-  particular    String
-  instrumentNo  String?
-  withdraw      Float?
-  deposit       Float?
-  balance       Float?
-  remarks       String?
+  id           String   @id @default(cuid())
+  sl           Int
+  date         DateTime
+  particular   String
+  instrumentNo String?
+  withdraw     Float?
+  deposit      Float?
+  balance      Float?
+  remarks      String?
 
   bankId String
-  bank   Bank    @relation(fields: [bankId], references: [id])
+  bank   Bank   @relation(fields: [bankId], references: [id])
 
   createdAt DateTime @default(now())
 }

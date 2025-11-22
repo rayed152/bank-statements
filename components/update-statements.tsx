@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,59 +8,84 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { createStatement } from "@/actions/statement"; // adjust import path
+import { updateStatement } from "@/actions/statement";
 import { useRouter } from "next/navigation";
+
+interface Statement {
+  id: string;
+  sl: number;
+  date: string | Date;
+  particular: string;
+  instrumentNo?: string | null;
+  withdraw: number;
+  deposit: number;
+  balance: number;
+  remarks: string | null;
+}
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  bankId: string;
+  statement: Statement | null;
 }
 
-export default function CreateStatementDialog({
+export default function UpdateStatementDialog({
   open,
   onOpenChange,
-  bankId,
+  statement,
 }: Props) {
   const router = useRouter();
+
   const [date, setDate] = useState("");
   const [particular, setParticular] = useState("");
   const [instrumentNo, setInstrumentNo] = useState("");
   const [withdraw, setWithdraw] = useState<number | "">("");
   const [deposit, setDeposit] = useState<number | "">("");
   const [remarks, setRemarks] = useState("");
+
   const [loading, setLoading] = useState(false);
 
-  const handleCreate = async () => {
-    if (!particular) return;
+  // Prefill values when a statement is selected
+  useEffect(() => {
+    if (!statement) return;
+
+    const formattedDate = new Date(statement.date)
+      .toISOString()
+      .substring(0, 10);
+
+    // Wrap state updates in a microtask
+    Promise.resolve().then(() => {
+      setDate(formattedDate);
+      setParticular(statement.particular);
+      setInstrumentNo(statement.instrumentNo || "");
+      setWithdraw(statement.withdraw ?? 0);
+      setDeposit(statement.deposit ?? 0);
+      setRemarks(statement.remarks || "");
+    });
+  }, [statement]);
+
+  const handleUpdate = async () => {
+    if (!statement) return;
 
     setLoading(true);
 
     const formData = new FormData();
-    formData.append("bankId", bankId);
     formData.append("date", date);
     formData.append("particular", particular);
     formData.append("instrumentNo", instrumentNo);
-    if (withdraw !== "") formData.append("withdraw", withdraw.toString());
-    if (deposit !== "") formData.append("deposit", deposit.toString());
+    formData.append("withdraw", withdraw.toString());
+    formData.append("deposit", deposit.toString());
     formData.append("remarks", remarks);
 
-    const res = await createStatement(formData);
+    const res = await updateStatement(statement.id, formData);
 
     setLoading(false);
+
     if (res.success) {
       onOpenChange(false);
-      // reset form
-      setDate("");
-      setParticular("");
-      setInstrumentNo("");
-      setWithdraw("");
-      setDeposit("");
-      setRemarks("");
-
       router.refresh();
     } else {
-      alert(res.error || "Failed to create statement");
+      alert(res.error || "Failed to update statement");
     }
   };
 
@@ -68,13 +93,12 @@ export default function CreateStatementDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Statement</DialogTitle>
+          <DialogTitle>Update Statement</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3">
           <input
             type="date"
-            placeholder="Date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="w-full border p-2 rounded"
@@ -82,46 +106,46 @@ export default function CreateStatementDialog({
 
           <input
             type="text"
-            placeholder="Particular"
             value={particular}
             onChange={(e) => setParticular(e.target.value)}
+            placeholder="Particular"
             className="w-full border p-2 rounded"
           />
 
           <input
             type="text"
-            placeholder="Instrument No"
             value={instrumentNo}
             onChange={(e) => setInstrumentNo(e.target.value)}
+            placeholder="Instrument No"
             className="w-full border p-2 rounded"
           />
 
           <input
             type="number"
-            placeholder="Withdraw"
             value={withdraw}
             onChange={(e) => setWithdraw(Number(e.target.value))}
+            placeholder="Withdraw"
             className="w-full border p-2 rounded"
           />
 
           <input
             type="number"
-            placeholder="Deposit"
             value={deposit}
             onChange={(e) => setDeposit(Number(e.target.value))}
+            placeholder="Deposit"
             className="w-full border p-2 rounded"
           />
 
           <input
             type="text"
-            placeholder="Remarks"
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
+            placeholder="Remarks"
             className="w-full border p-2 rounded"
           />
 
-          <Button onClick={handleCreate} disabled={loading || !particular}>
-            {loading ? "Creating..." : "Create Statement"}
+          <Button onClick={handleUpdate} disabled={loading}>
+            {loading ? "Updating..." : "Update Statement"}
           </Button>
         </div>
       </DialogContent>

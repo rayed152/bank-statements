@@ -2,7 +2,7 @@ import BankPageClient from "@/components/bank-page";
 import { getBankById } from "@/actions/bank";
 
 interface PageProps {
-  params: Promise<{ id: string }>; // Next.js App Router dynamic params can be Promise
+  params: Promise<{ id: string }>;
 }
 
 export default async function BankPage({ params }: PageProps) {
