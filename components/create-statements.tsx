@@ -11,6 +11,9 @@ import { Button } from "@/components/ui/button";
 import { createStatement } from "@/actions/statement"; // adjust import path
 import { useRouter } from "next/navigation";
 
+// Default Particulars
+const defaultParticulars = ["a", "b", "c", "d"];
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -24,22 +27,28 @@ export default function CreateStatementDialog({
 }: Props) {
   const router = useRouter();
   const [date, setDate] = useState("");
-  const [particular, setParticular] = useState("");
+  const [selectedParticular, setSelectedParticular] = useState("");
+  const [customParticular, setCustomParticular] = useState("");
   const [instrumentNo, setInstrumentNo] = useState("");
   const [withdraw, setWithdraw] = useState<number | "">("");
   const [deposit, setDeposit] = useState<number | "">("");
   const [remarks, setRemarks] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Combine selected + custom
+  const fullParticular = selectedParticular
+    ? `${selectedParticular}: ${customParticular}`.trim()
+    : customParticular;
+
   const handleCreate = async () => {
-    if (!particular) return;
+    if (!fullParticular) return;
 
     setLoading(true);
 
     const formData = new FormData();
     formData.append("bankId", bankId);
     formData.append("date", date);
-    formData.append("particular", particular);
+    formData.append("particular", fullParticular);
     formData.append("instrumentNo", instrumentNo);
     if (withdraw !== "") formData.append("withdraw", withdraw.toString());
     if (deposit !== "") formData.append("deposit", deposit.toString());
@@ -52,7 +61,8 @@ export default function CreateStatementDialog({
       onOpenChange(false);
       // reset form
       setDate("");
-      setParticular("");
+      setSelectedParticular("");
+      setCustomParticular("");
       setInstrumentNo("");
       setWithdraw("");
       setDeposit("");
@@ -80,13 +90,29 @@ export default function CreateStatementDialog({
             className="w-full border p-2 rounded"
           />
 
-          <input
-            type="text"
-            placeholder="Particular"
-            value={particular}
-            onChange={(e) => setParticular(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
+          {/* Particular Dropdown + Custom Input */}
+          <div className="flex gap-2">
+            <select
+              value={selectedParticular}
+              onChange={(e) => setSelectedParticular(e.target.value)}
+              className="border p-2 rounded"
+            >
+              <option value="">--Select Particular--</option>
+              {defaultParticulars.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              placeholder="Enter your particular"
+              value={customParticular}
+              onChange={(e) => setCustomParticular(e.target.value)}
+              className="border p-2 rounded flex-1"
+            />
+          </div>
 
           <input
             type="text"
@@ -120,7 +146,7 @@ export default function CreateStatementDialog({
             className="w-full border p-2 rounded"
           />
 
-          <Button onClick={handleCreate} disabled={loading || !particular}>
+          <Button onClick={handleCreate} disabled={loading || !fullParticular}>
             {loading ? "Creating..." : "Create Statement"}
           </Button>
         </div>

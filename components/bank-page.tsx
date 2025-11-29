@@ -110,14 +110,14 @@ export default function BankPageClient({ bank }: BankPageClientProps) {
     }
   };
 
-  const columns: { label: string; field: SortField }[] = [
-    { label: "SL", field: "sl" },
-    { label: "DATE", field: "date" },
-    { label: "PARTICULAR", field: "particular" },
-    { label: "DEPOSIT", field: "deposit" },
-    { label: "WITHDRAW", field: "withdraw" },
-    { label: "BALANCE", field: "balance" },
-    { label: "REMARKS", field: "remarks" },
+  const columns: { label: string; field: SortField; width?: string }[] = [
+    { label: "SL", field: "sl", width: "w-12" },
+    { label: "DATE", field: "date", width: "w-28" },
+    { label: "PARTICULAR", field: "particular", width: "w-2xl" },
+    { label: "DEPOSIT", field: "deposit", width: "w-48" },
+    { label: "WITHDRAW", field: "withdraw", width: "w-48" },
+    { label: "BALANCE", field: "balance", width: "w-48" },
+    { label: "REMARKS", field: "remarks", width: "w-48" },
   ];
 
   return (
@@ -156,7 +156,7 @@ export default function BankPageClient({ bank }: BankPageClientProps) {
             {columns.map((col) => (
               <th
                 key={col.field}
-                className="border border-gray-300 px-2 py-1 cursor-pointer select-none"
+                className={`border border-gray-300 px-2 py-1 cursor-pointer select-none ${col.width}`}
                 onClick={() => handleSort(col.field)}
               >
                 {col.label}
